@@ -114,7 +114,7 @@ def save_json(drf, t_bin_centres, E_bin_centres, info, name, file_name):
     json_write_dictionary(file_name, to_save)
 
 
-def main():
+def main(kinematic_cuts):
     """Calculate detector response function."""
     # Bins
     E_bin_centres = np.arange(1000, 18000 + 50, 50)
@@ -137,7 +137,10 @@ def main():
             mask_1 = mask_S1(E_S1, S1_thr[S1])
 
             # Create mask for kinematic cuts
-            mask_2 = mask_kincut(kin_S1, kin_S2)
+            if kinematic_cuts:
+                mask_2 = mask_kincut(kin_S1, kin_S2)
+            else:
+                mask_2 = np.array(len(mask_1) * [True])
 
             # Sort out data outside mask
             mask = mask_1 & mask_2
@@ -156,13 +159,14 @@ def main():
 
 
 if __name__ == '__main__':
-    drf_matrix, t_bin_centres, E_bin_centres = main()
+    kinematic_cuts = False
+    drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts)
     info = ('DRF for TOFu, individual thresholds and energy dependent time '
-            'resolution applied to each S1 and S2. Kinematic cuts applied '
-            'with cut factors a=1, b=1, c=1.')
+            'resolution applied to each S1 and S2. No kinematic cuts are '
+            'applied.')
     name = 'TOFu DRF'
     file_names = ['tofu_drf.json', 'tofu_drf_kin.json',
                   'tofu_drf_scaled_kin.json']
 
     save_json(drf_matrix, t_bin_centres, E_bin_centres, info, name,
-              file_names[1])
+              file_names[0])
