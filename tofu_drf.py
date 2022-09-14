@@ -78,11 +78,15 @@ def mask_S2(E_S2, t_tof, i_S2, detector, threshold):
     return E_S2[mask], t_tof[mask], i_S2[mask]
 
 
-def return_thresholds():
+def return_thresholds(light_yield):
     """Return detector energy thresholds (MeV)."""
-    thresholds = np.loadtxt('input_files/thresholds_MeV.txt', usecols=[1])
+    if light_yield:
+        f_name = 'input_files/thresholds_MeVee.txt'
+    else:
+        f_name = 'input_files/thresholds_MeV.txt'
+    thresholds = np.loadtxt(f_name, usecols=[1])
 
-    # Convert to keV
+    # Convert to keV(ee)
     thresholds *= 1000
     return thresholds[:5], thresholds[5:]
 
@@ -114,7 +118,7 @@ def save_json(drf, t_bin_centres, E_bin_centres, info, name, file_name):
     json_write_dictionary(file_name, to_save)
 
 
-def main(kinematic_cuts):
+def main(kinematic_cuts, light_yield):
     """Calculate detector response function."""
     # Bins
     E_bin_centres = np.arange(1000, 18000 + 50, 50)
@@ -125,7 +129,7 @@ def main(kinematic_cuts):
     drf_matrix = np.zeros([len(t_bin_centres), len(E_bin_centres)])
 
     # S1/S2 thresholds
-    S1_thr, S2_thr = return_thresholds()
+    S1_thr, S2_thr = return_thresholds(light_yield)
 
     for drf_col, energy in enumerate(E_bin_centres):
         print(f'Processing: {energy} keV')
@@ -159,8 +163,10 @@ def main(kinematic_cuts):
 
 
 if __name__ == '__main__':
-    kinematic_cuts = False
-    drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts)
+    kinematic_cuts = True
+    light_yield = True
+    drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts,
+                                                    light_yield)
     info = ('DRF for TOFu, individual thresholds and energy dependent time '
             'resolution applied to each S1 and S2. No kinematic cuts are '
             'applied.')
@@ -169,4 +175,4 @@ if __name__ == '__main__':
                   'tofu_drf_scaled_kin.json']
 
     save_json(drf_matrix, t_bin_centres, E_bin_centres, info, name,
-              file_names[0])
+              file_names[1])
