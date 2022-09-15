@@ -26,7 +26,7 @@ def json_write_dictionary(file_name, to_save, check=True):
         json.dump(to_save, handle)
 
 
-def read_data(energy, S1):
+def read_data(energy, S1, light_yield):
     """Return flight times, deposited erg, S2 mask, and kinematic cuts mask."""
     file = f'{energy}keV_S1%3A{S1+1}_ToFuMatrix.root'
     with uproot.open(f'data/{file}') as handle:
@@ -35,8 +35,12 @@ def read_data(energy, S1):
 
         # Grab data from tree
         t_tof = tree['timeWres'].array(library='np')
-        E_S1 = tree['S1Ed'].array(library='np')
-        E_S2 = tree['S2Ed'].array(library='np')
+        if light_yield:
+            E_S1 = tree['S1EdMeVee'].array(library='np')
+            E_S2 = tree['S2EdMeVee'].array(library='np')
+        else:
+            E_S1 = tree['S1Ed'].array(library='np')
+            E_S2 = tree['S2Ed'].array(library='np')
         i_S2 = tree['S2c'].array(library='np')
         kin_S1 = tree['S1kin'].array(library='np')
         kin_S2 = tree['S2kin'].array(library='np')
@@ -103,7 +107,8 @@ def masked(mask, t_tof, E_S1, E_S2, i_S2):
     return t_tof[mask], E_S1[mask], E_S2[mask], i_S2[mask]
 
 
-def save_json(drf, t_bin_centres, E_bin_centres, info, name, file_name):
+def save_json(drf, t_bin_centres, E_bin_centres, info, name, file_name,
+              light_yield):
     """Save DRF as json file."""
     # Convert from numpy array to list
     drf_list = [list(col) for col in drf.T]
@@ -135,7 +140,8 @@ def main(kinematic_cuts, light_yield):
         print(f'Processing: {energy} keV')
         for S1 in range(5):
             # Get data
-            t_tof, E_S1, E_S2, i_S2, kin_S1, kin_S2 = read_data(energy, S1)
+            t_tof, E_S1, E_S2, i_S2, kin_S1, kin_S2 = read_data(energy, S1,
+                                                                light_yield)
 
             # Create mask for S1 energy thresholds
             mask_1 = mask_S1(E_S1, S1_thr[S1])
@@ -168,11 +174,15 @@ if __name__ == '__main__':
     drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts,
                                                     light_yield)
     info = ('DRF for TOFu, individual thresholds and energy dependent time '
-            'resolution applied to each S1 and S2. No kinematic cuts are '
-            'applied.')
+            'resolution applied to each S1 and S2. Kinematic cuts are '
+            'applied with scaling factors a=1, b=1, c=1. Units of light '
+            'yield used when generating DRF.')
+    # info = ('DRF for TOFu, individual thresholds and energy dependent time '
+    #         'resolution applied to each S1 and S2. No kinematic cuts are '
+    #         'applied. Units of light yield used when generating DRF.')
     name = 'TOFu DRF'
     file_names = ['tofu_drf.json', 'tofu_drf_kin.json',
                   'tofu_drf_scaled_kin.json']
 
     save_json(drf_matrix, t_bin_centres, E_bin_centres, info, name,
-              file_names[1])
+              file_names[1], light_yield)
