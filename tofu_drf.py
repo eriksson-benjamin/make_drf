@@ -38,12 +38,14 @@ def read_data(energy, S1, light_yield):
         if light_yield:
             E_S1 = tree['S1EdMeVee'].array(library='np')
             E_S2 = tree['S2EdMeVee'].array(library='np')
+            kin_S1 = tree['S1kinLy'].array(library='np')
+            kin_S2 = tree['S2kinLy'].array(library='np')
         else:
             E_S1 = tree['S1Ed'].array(library='np')
             E_S2 = tree['S2Ed'].array(library='np')
+            kin_S1 = tree['S1kin'].array(library='np')
+            kin_S2 = tree['S2kin'].array(library='np')
         i_S2 = tree['S2c'].array(library='np')
-        kin_S1 = tree['S1kin'].array(library='np')
-        kin_S2 = tree['S2kin'].array(library='np')
 
     return 0.4 * t_tof, E_S1, E_S2, i_S2, kin_S1, kin_S2
 
@@ -169,14 +171,14 @@ def main(kinematic_cuts, light_yield):
 
 
 if __name__ == '__main__':
+
     kinematic_cuts = True
     light_yield = True
     drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts,
                                                     light_yield)
     info = ('DRF for TOFu, individual thresholds and energy dependent time '
             'resolution applied to each S1 and S2. Kinematic cuts are '
-            'applied with scaling factors a=1, b=1, c=1. Units of light '
-            'yield used when generating DRF.')
+            'applied with scaling factors a=0.7, b=1.4, c=1.2.')
     # info = ('DRF for TOFu, individual thresholds and energy dependent time '
     #         'resolution applied to each S1 and S2. No kinematic cuts are '
     #         'applied. Units of light yield used when generating DRF.')
@@ -185,4 +187,4 @@ if __name__ == '__main__':
                   'tofu_drf_scaled_kin.json']
 
     save_json(drf_matrix, t_bin_centres, E_bin_centres, info, name,
-              file_names[1], light_yield)
+              file_names[2], light_yield)
