@@ -23,9 +23,11 @@ def json_read_dictionary(file_name):
 
 if __name__ == '__main__':
     # Read data
-    file_name = 'output_files/tofu_drf_kin.json'
+    drf_name = 'tofu_drf_scaled_kin_ly'
+    file_name = f'output_files/{drf_name}.json'
     j = json_read_dictionary(file_name)
 
     udfs.plot_matrix(j['matrix'], (j['x'], j['y']), log=True,
                      xlabel=f'E ({j["x_unit"]})',
                      ylabel=f'$t_{{TOF}}$ ({j["y_unit"]})')
+    plt.savefig(drf_name)
