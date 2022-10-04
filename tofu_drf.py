@@ -171,20 +171,62 @@ def main(kinematic_cuts, light_yield):
 
 
 if __name__ == '__main__':
+    """
+    Generate DRF with or without kinematic cuts, light yield and scaling
+    factor.
 
+    Notes
+    -----
+    For scaling=True/False different data sets are required. Geant4 data sets
+    are generated on Galactica under:
+    /fusion/beriksson/response_function/sort_geant4
+    """
     kinematic_cuts = True
     light_yield = True
+    scaling = False
+
+    if not kinematic_cuts and scaling:
+        raise ValueError('Disallowed combination.')
+
+    # Setting for file name and info to be stored in .json file.
+    setting = light_yield * 3 + kinematic_cuts + scaling
+
+    name = 'TOFu DRF'
+    file_names = ['tofu_drf.json',
+                  'tofu_drf_kin.json',
+                  'tofu_drf_scaled_kin.json',
+                  'tofu_drf_ly.json',
+                  'tofu_drf_kin_ly.json',
+                  'tofu_drf_scaled_kin_ly.json']
+
+    info = [('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. No kinematic cuts are '
+             'applied. Units of proton recoil energy (MeV) are used for '
+             'thresholds in DRF.'),
+            ('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. Kinematic cuts are '
+             'applied with scaling factors a=1, b=1, c=1. Units of proton '
+             'recoil energy (MeV) are used for thresholds in DRF.'),
+            ('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. Kinematic cuts are '
+             'applied with scaling factors a=0.7, b=1.2, c=1.4. Units of '
+             'proton recoil energy (MeV) are used for thresholds in DRF.'),
+            ('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. No kinematic cuts are '
+             'applied. Units of light yield (MeVee) are used for thresholds '
+             'in DRF.'),
+            ('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. Kinematic cuts are '
+             'applied with scaling factors a=1, b=1, c=1. Units of light '
+             'yield (MeVee) are used for thresholds in DRF.'),
+            ('DRF for TOFu, individual thresholds and energy dependent time '
+             'resolution applied to each S1 and S2. Kinematic cuts are '
+             'applied with scaling factors a=0.7, b=1.2, c=1.4. Units of '
+             'light yield (MeVee) are used for thresholds in DRF.')]
+
+    # Calculate DRF
     drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts,
                                                     light_yield)
-    info = ('DRF for TOFu, individual thresholds and energy dependent time '
-            'resolution applied to each S1 and S2. Kinematic cuts are '
-            'applied with scaling factors a=0.7, b=1.4, c=1.2.')
-    # info = ('DRF for TOFu, individual thresholds and energy dependent time '
-    #         'resolution applied to each S1 and S2. No kinematic cuts are '
-    #         'applied. Units of light yield used when generating DRF.')
-    name = 'TOFu DRF'
-    file_names = ['tofu_drf.json', 'tofu_drf_kin.json',
-                  'tofu_drf_scaled_kin.json']
 
-    save_json(drf_matrix, t_bin_centres, E_bin_centres, info, name,
-              file_names[2], light_yield)
+    save_json(drf_matrix, t_bin_centres, E_bin_centres, info[setting], name,
+              file_names[setting], light_yield)
