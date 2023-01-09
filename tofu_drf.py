@@ -84,12 +84,12 @@ def mask_S2(E_S2, t_tof, i_S2, detector, threshold):
     return E_S2[mask], t_tof[mask], i_S2[mask]
 
 
-def return_thresholds(light_yield):
+def return_thresholds(light_yield, energy_calibration):
     """Return detector energy thresholds (MeV)."""
     if light_yield:
-        f_name = 'input_files/thresholds_MeVee.txt'
+        f_name = f'input_files/{energy_calibration}/thresholds_MeVee.txt'
     else:
-        f_name = 'input_files/thresholds_MeV.txt'
+        f_name = f'input_files/{energy_calibration}/thresholds_MeV.txt'
     thresholds = np.loadtxt(f_name, usecols=[1])
 
     # Convert to keV(ee)
@@ -125,7 +125,7 @@ def save_json(drf, t_bin_centres, E_bin_centres, info, name, file_name,
     json_write_dictionary(file_name, to_save)
 
 
-def main(kinematic_cuts, light_yield):
+def main(kinematic_cuts, light_yield, energy_calibration):
     """Calculate detector response function."""
     # Bins
     E_bin_centres = np.arange(1000, 18000 + 50, 50)
@@ -136,7 +136,7 @@ def main(kinematic_cuts, light_yield):
     drf_matrix = np.zeros([len(t_bin_centres), len(E_bin_centres)])
 
     # S1/S2 thresholds
-    S1_thr, S2_thr = return_thresholds(light_yield)
+    S1_thr, S2_thr = return_thresholds(light_yield, energy_calibration)
 
     for drf_col, energy in enumerate(E_bin_centres):
         print(f'Processing: {energy} keV')
@@ -181,9 +181,10 @@ if __name__ == '__main__':
     are generated on Galactica under:
     /fusion/beriksson/response_function/sort_geant4
     """
-    kinematic_cuts = True
-    light_yield = True
+    kinematic_cuts = False
+    light_yield = False
     scaling = False
+    energy_calibration = '26-11-2022-energy-calibration'
 
     if not kinematic_cuts and scaling:
         raise ValueError('Disallowed combination.')
@@ -226,7 +227,8 @@ if __name__ == '__main__':
 
     # Calculate DRF
     drf_matrix, t_bin_centres, E_bin_centres = main(kinematic_cuts,
-                                                    light_yield)
+                                                    light_yield,
+                                                    energy_calibration)
 
     save_json(drf_matrix, t_bin_centres, E_bin_centres, info[setting], name,
               file_names[setting], light_yield)

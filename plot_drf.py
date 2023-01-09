@@ -23,8 +23,9 @@ def json_read_dictionary(file_name):
 
 if __name__ == '__main__':
     # Read data
-    drf_name = 'tofu_drf_scaled_kin_ly'
-    file_name = f'output_files/{drf_name}.json'
+    drf_name = 'tofu_drf_ly'
+    erg_cal = '26-11-2022-energy-calibration'
+    file_name = f'output_files/{erg_cal}/{drf_name}.json'
     j = json_read_dictionary(file_name)
 
     udfs.plot_matrix(j['matrix'], (j['x'], j['y']), log=True,
